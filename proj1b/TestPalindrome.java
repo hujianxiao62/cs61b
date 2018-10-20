@@ -22,11 +22,15 @@ public class TestPalindrome {
         assertEquals(palindrome.isPalindrome("bt"), false);
         assertEquals(palindrome.isPalindrome("bat"), false);
         assertEquals(palindrome.isPalindrome("noon"), true);
-       assertEquals(palindrome.isPalindrome("nabcn"), false);
+        assertEquals(palindrome.isPalindrome("nabcn"), false);
         assertEquals(palindrome.isPalindrome("nabcban"), true);
         assertEquals(palindrome.isPalindrome("n"), true);
         assertEquals(palindrome.isPalindrome(""), true);
         assertEquals(palindrome.isPalindrome("nn"), true);
+        CharacterComparator cc = new OffByOne();
+        assertEquals(palindrome.isPalindrome("absab",cc), true);
+        assertEquals(palindrome.isPalindrome("asssb",cc), false);
+        assertEquals(palindrome.isPalindrome("acb",cc), true);
 
     }
 }
