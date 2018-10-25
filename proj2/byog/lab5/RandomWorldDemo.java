@@ -44,6 +44,7 @@ public class RandomWorldDemo {
         }
     }
 
+
     public static void main(String[] args) {
         TERenderer ter = new TERenderer();
         ter.initialize(WIDTH, HEIGHT);
@@ -52,7 +53,7 @@ public class RandomWorldDemo {
         fillWithRandomTiles(randomTiles);
 
         ter.renderFrame(randomTiles);
-    }
 
+    }
 
 }
