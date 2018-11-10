@@ -6,7 +6,7 @@ import byog.TileEngine.TETile;
  *  the command line inputs, and lets the byog.Core.Game class take over
  *  in either keyboard or input string mode.
  */
-public class Main {
+public class  Main {
     public static void main(String[] args) {
         if (args.length > 1) {
             System.out.println("Can only have one argument - the input string");
