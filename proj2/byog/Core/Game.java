@@ -45,54 +45,84 @@ public class Game {
 
     //create a hall.
     // return end position of hall
-    public static int[] addHall(int length, int direction, int[] startPosition, TETile[][] world) {
-
-        int[] currentDirection = getDirection(direction);
-        int hallLength = getLength(length,currentDirection,startPosition,world,true);
-
-        int xStart = startPosition[0];
-        int yStart = startPosition[1];
-        int xDirection = currentDirection[0];
-        int yDirection = currentDirection[1];
+    public static int[] addHall(int length, int[] startPositionDirection, int[][] world) {
+        int direction = getRandomDirection(startPositionDirection[2]);
+        int[] currentDirection = new int[]{startPositionDirection[0], startPositionDirection[1], direction};
+        int hallLength = getLength(length, currentDirection, world,true);
+//        while (hallLength<=0){
+//            startPositionDirection = new int[]{startPositionDirection[0],startPositionDirection[1],(startPositionDirection[1]+RANDOM.nextInt(4))%4};
+//            hallLength = getLength(length, startPositionDirection, world,true);
+//        }
+        int xStart = startPositionDirection[0];
+        int yStart = startPositionDirection[1];
+        int xDirection = getDirection(direction)[0];
+        int yDirection = getDirection(direction)[1];
 
         for (int i = 0; i < hallLength; i++) {
             for (int j = 0; j < hallLength; j++) {
-                world[xStart+i*xDirection][yStart+j*yDirection] = Tileset.FLOOR;
+                world[xStart+i*xDirection][yStart+j*yDirection] = 1;
             }
         }
-        int[] currentPosition = new int[]{xStart+hallLength*xDirection,yStart+hallLength*yDirection};
-        return currentPosition;
+        int[] currentPositionDirection = new int[]{xStart+hallLength*xDirection,yStart+hallLength*yDirection,direction};
+        return currentPositionDirection;
     }
 
     //create a room.
     // return outDoor position
     // length1 is parallel to direction, length2 is perpendicular to direction
-    public static int[] addRoom(int length1, int length2, int direction, int[] inDoorPosition, TETile[][] world) {
-        final int[] currentDirection = getDirection(direction);
-        final int length11 = getLength(length1,currentDirection,inDoorPosition,world,true);
-        final int length22 = getLength(length2,currentDirection,inDoorPosition,world,false);
-        final int xDirection = currentDirection[0];
-        final int yDirection = currentDirection[1];
-        int[] outDoorPosition = new int[2];
+    public static int[] addRoom(int length1, int length2, int[] centerPositionDirection, int[][] world) {
+        final int lengthX = getLength(length1,centerPositionDirection,world,false);
+        final int lengthY = getLength(length2,centerPositionDirection,world,false);
+        final int xStart = centerPositionDirection[0];
+        final int yStart = centerPositionDirection[1];
+        int[] outDoorPosition = new int[]{0,0,0};
 
-        //set random placement of indoor
-        int displace = RANDOM.nextInt(length22);
-        for (int i = -displace; i < length22 - displace; i++) {
-            for (int j = -displace; j < length22 - displace; j++) {
-                int[] startPosition = new int[]{inDoorPosition[0] + i*yDirection, inDoorPosition[1] + j*xDirection};
-                addHall(length11,direction,startPosition,world);
+        if(lengthX<=0 || lengthY<=0){
+            return new int[]{centerPositionDirection[0], centerPositionDirection[1], RANDOM.nextInt(4) + 1};
+        }else {
+            //set random placement of indoor
+            int displaceX = RANDOM.nextInt(lengthX);
+            int displaceY = RANDOM.nextInt(lengthY);
+            for (int i = -displaceX; i < lengthX - displaceX; i++) {
+                for (int j = -displaceY; j < lengthY - displaceY; j++) {
+                    world[xStart + i][yStart + j] = 1;
+                }
             }
+
+            switch (RANDOM.nextInt(4) + 1) {
+                case 1:
+                    outDoorPosition = new int[]{xStart - displaceX + RANDOM.nextInt(lengthX), yStart + lengthY - displaceY - 1, 1};
+                    break;
+                case 2:
+                    outDoorPosition = new int[]{xStart + lengthX - displaceX - 1, yStart - displaceY + RANDOM.nextInt(lengthY), 2};
+                    break;
+                case 3:
+                    outDoorPosition = new int[]{xStart - displaceX + RANDOM.nextInt(lengthX), yStart - displaceY, 3};
+                    break;
+                case 4:
+                    outDoorPosition = new int[]{xStart - displaceX, yStart - displaceY + RANDOM.nextInt(lengthY), 4};
+                    break;
+            }
+            return outDoorPosition;
         }
-        //TODO TIME
-//        switch (RANDOM.nextInt(4)){
-//            case 0: outDoorPosition = inDoorPosition; break;
-//            case 1: outDoorPosition = [];
-//        }
-//        int xOutDoor = RANDOM
-        return inDoorPosition;
     }
 
-    // direction=1, return[0,1]; direction=2, return[1,0]; direction=3, return[0,-1]; direction=4, return[-1,0];, direction= other, return random of these four;
+    // if direction is in [1,4], return it; otherwise return a random direction
+    private static int getRandomDirection(int direction){
+        if (direction == 1 || direction == 2 || direction == 3 || direction == 4)
+        {return direction;
+        }else {
+            return RANDOM.nextInt(4)+1;
+        }
+    }
+
+    // if direction is in [1,4], return it; otherwise return a random direction
+    public static int[] positionRandomDirection(int[] currentPositionDirection){
+
+            return new int[]{currentPositionDirection[0],currentPositionDirection[1],RANDOM.nextInt(4)+1};
+    }
+
+    // direction=1, return[0,1]; direction=2, return[1,0]; direction=3, return[0,-1]; direction=4, return[-1,0];
     private static int[] getDirection(int direction){
         int xDirection = 0;
         int yDirection = 0;
@@ -102,12 +132,7 @@ public class Game {
             case 2: xDirection = 1;break;
             case 3: yDirection = -1;break;
             case 4: xDirection = -1;break;
-            //random direction for hall
-            default: xDirection = RANDOM.nextInt(3) -1;
-                if(xDirection == 0){
-                    yDirection = RANDOM.nextInt(2) == 1 ? 1:-1;
-                }
-                break;
+            default: throw new IllegalArgumentException("direction should be 1:up, 2:right, 3:down, 4:left");
         }
         int[] currentDirection = new int[]{xDirection,yDirection};
         return currentDirection;
@@ -115,37 +140,74 @@ public class Game {
 
     // out of domain, length =0;
     // in domain:  length>0, return length; length <=0, return random [0,-length];
-    private static int getLength(int length, int[] currentDirection, int[] startPosition, TETile[][] world, boolean parallel){
+    private static int getLength(int length, int[] startPositionDirection, int[][] world, boolean Hall){
         int hallLength;
-        int xDirection = currentDirection[0];
-        int yDirection = currentDirection[1];
-        int xStart = startPosition[0];
-        int yStart = startPosition[1];
-        boolean outBoundary;
+        int xStart = startPositionDirection[0];
+        int yStart = startPositionDirection[1];
 
         if(length <= 0){
-            hallLength = RANDOM.nextInt(-length + 1);
+            hallLength = RANDOM.nextInt(-length)+1;
         }else {
             hallLength = length;
         }
 
-        if(parallel) {
-            // true: the length parallel to direction is out the domain
-            outBoundary = xStart + xDirection * hallLength > world.length - 1 ||
-                    xStart + xDirection * hallLength < 0 ||
-                    yStart + yDirection * hallLength > world[0].length - 1 ||
-                    yStart + yDirection * hallLength < 0;
-        }else {
-            // true: the length perpendicular to direction is out the domain
-            outBoundary = xStart + hallLength > world.length - 1 ||
-                    xStart - hallLength < 0 ||
-                    yStart + hallLength > world[0].length - 1 ||
-                    yStart - hallLength < 0;
+        while (outBoundary(hallLength,startPositionDirection,world,Hall)){
+            hallLength--;
         }
 
-        if (outBoundary){
-            hallLength = 0;
-        }
         return hallLength;
     }
+
+    //Hall=true: check one direction; Hall=false: check four direction;
+    private static boolean outBoundary(int length, int[] startPositionDirection, int[][] world, boolean Hall) {
+        boolean outBoundary;
+        int[]currentDirection = getDirection(startPositionDirection[2]);
+        int xDirection = currentDirection[0];
+        int yDirection = currentDirection[1];
+        int xStart = startPositionDirection[0];
+        int yStart = startPositionDirection[1];
+
+        if (Hall) {
+            outBoundary = xStart + xDirection * length > world.length - 2 ||
+                    xStart + xDirection * length < 1 ||
+                    yStart + yDirection * length > world[0].length - 2 ||
+                    yStart + yDirection * length < 1;
+        } else {
+            outBoundary = xStart + length > world.length - 2 ||
+                    xStart - length < 1 ||
+                    yStart + length > world[0].length - 2 ||
+                    yStart - length < 1;
+        }
+        return outBoundary;
+    }
+
+    //add wall.
+    public static void addWall(int[][] world) {
+
+        for (int i = 0; i < world.length; i++) {
+            for (int j = 0; j < world[0].length; j++) {
+                if(world[i][j] == 1){
+                    for (int x = -1; x < 2; x++) {
+                        for (int y = -1; y < 2; y++) {
+                            world[i+x][j+y] = world[i+x][j+y]==1? 1:2;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //add tile.
+    public static void addTile(TETile[][] world, int[][] intWorld) {
+
+        for (int i = 0; i < world.length; i++) {
+            for (int j = 0; j < world[0].length; j++) {
+                switch (intWorld[i][j]){
+                    case 1: world[i][j] = Tileset.FLOOR;break;
+                    case 2: world[i][j] = Tileset.WALL;break;
+                }
+            }
+        }
+    }
+
 }
