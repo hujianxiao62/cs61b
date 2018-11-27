@@ -5,6 +5,8 @@ import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -18,7 +20,7 @@ public class HexWorld {
     private static final int WIDTH = 4*(hexWidthNoOverlap)+hexWidth+1;
     private static final int HEIGHT = 5*hexHeight+2;
 
-    private static final long SEED = 2873124;
+    private static final long SEED = 2873129;
     private static final Random RANDOM = new Random(SEED);
 
 
@@ -34,32 +36,11 @@ public class HexWorld {
                 world[x][y] = Tileset.NOTHING;
             }
         }
-
-
-
-        int[] currentPosition = new int[]{20,20,-1};
-        int[][] intWorld = new int[WIDTH][HEIGHT];
-//        addHexagon(hexSize,world,true);
-        for(int i =0; i < 60; i++){
-            currentPosition = Game.addHall(-10,currentPosition,intWorld);
-            currentPosition = Game.positionRandomDirection(currentPosition);
-            currentPosition = Game.addHall(-10,currentPosition,intWorld);
-            currentPosition = Game.positionRandomDirection(currentPosition);
-            currentPosition = Game.addHall(-10,currentPosition,intWorld);
-            currentPosition = Game.positionRandomDirection(currentPosition);
-            currentPosition = Game.addHall(-10,currentPosition,intWorld);
-             currentPosition = Game.addRoom(-6,-6,currentPosition,intWorld);
-//            System.out.println(currentPosition[0]+" "+currentPosition[1]+" "+currentPosition[2]);
-        }
-
-        Game.addWall(intWorld);
-        Game.addTile(world,intWorld);
-
+        addHexagon(hexSize,world,true);
         ter.renderFrame(world);
 
-//
-
     }
+
 
     public static void addHexagon(int size, TETile[][] world, boolean randomWorld){
         int px;

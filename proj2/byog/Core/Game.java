@@ -1,25 +1,26 @@
 package byog.Core;
-
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
-import com.sun.xml.internal.bind.v2.TODO;
-
+import java.io.*;
 import java.util.Random;
-
 public class Game {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
-
-    private static final long SEED = 2873123;
-    private static final Random RANDOM = new Random(SEED);
-
+    private intWorld gameIntWorld;
+    private long SEED = 12354; //Real SEED is parsed by args, this value is for loading the game without saved file
+    private Random RANDOM = new Random(SEED);
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
+        //        // initialize the tile rendering engine with a window of size WIDTH x HEIGHT
+//        TERenderer ter = new TERenderer();
+//        ter.initialize(WIDTH, HEIGHT);
+
+        //ter.renderFrame(world);
     }
 
     /**
@@ -35,179 +36,104 @@ public class Game {
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] playWithInputString(String input) {
-        // TODO: Fill out this method to run the game using the input passed in,
-        // and return a 2D tile representation of the world that would have been
-        // drawn if the same inputs had been given to playWithKeyboard().
+        String command = input.toUpperCase();
+        if(command.charAt(0)=='L') {
+            gameIntWorld = loadWorld();
+        }else if(command.charAt(0)=='N'){
+            //get seed number
+            int j = 1;
+            String Seed = "";
+            while (command.charAt(j) != 'S') {
+                Seed += command.charAt(j);
+                j++;
+            }
+            SEED = Integer.parseInt(Seed);
+            RANDOM = new Random(SEED);
+            gameIntWorld = new intWorld(WIDTH,HEIGHT,RANDOM);
+        }
 
-        TETile[][] finalWorldFrame = null;
-        return finalWorldFrame;
-    }
+        //move player, if char(i) is not aswd, nothing will change
+        for (int i = 1; i < command.length(); i++) {
+            gameIntWorld.movePlayer(String.valueOf(command.charAt(i)));
+        }
 
-    //create a hall.
-    // return end position of hall
-    public static int[] addHall(int length, int[] startPositionDirection, int[][] world) {
-        int direction = getRandomDirection(startPositionDirection[2]);
-        int[] currentDirection = new int[]{startPositionDirection[0], startPositionDirection[1], direction};
-        int hallLength = getLength(length, currentDirection, world,true);
-//        while (hallLength<=0){
-//            startPositionDirection = new int[]{startPositionDirection[0],startPositionDirection[1],(startPositionDirection[1]+RANDOM.nextInt(4))%4};
-//            hallLength = getLength(length, startPositionDirection, world,true);
-//        }
-        int xStart = startPositionDirection[0];
-        int yStart = startPositionDirection[1];
-        int xDirection = getDirection(direction)[0];
-        int yDirection = getDirection(direction)[1];
+        //save game
+        if(command.charAt(command.length()-1)=='Q'){
+        saveWorld(gameIntWorld);
+        }
 
-        for (int i = 0; i < hallLength; i++) {
-            for (int j = 0; j < hallLength; j++) {
-                world[xStart+i*xDirection][yStart+j*yDirection] = 1;
+        // initialize tiles
+        TETile[][] world = new TETile[WIDTH][HEIGHT];
+        for (int x = 0; x < WIDTH; x += 1) {
+            for (int y = 0; y < HEIGHT; y += 1) {
+                world[x][y] = Tileset.NOTHING;
             }
         }
-        int[] currentPositionDirection = new int[]{xStart+hallLength*xDirection,yStart+hallLength*yDirection,direction};
-        return currentPositionDirection;
+        world = addTile(world,gameIntWorld);
+        return world;
     }
 
-    //create a room.
-    // return outDoor position
-    // length1 is parallel to direction, length2 is perpendicular to direction
-    public static int[] addRoom(int length1, int length2, int[] centerPositionDirection, int[][] world) {
-        final int lengthX = getLength(length1,centerPositionDirection,world,false);
-        final int lengthY = getLength(length2,centerPositionDirection,world,false);
-        final int xStart = centerPositionDirection[0];
-        final int yStart = centerPositionDirection[1];
-        int[] outDoorPosition = new int[]{0,0,0};
-
-        if(lengthX<=0 || lengthY<=0){
-            return new int[]{centerPositionDirection[0], centerPositionDirection[1], RANDOM.nextInt(4) + 1};
-        }else {
-            //set random placement of indoor
-            int displaceX = RANDOM.nextInt(lengthX);
-            int displaceY = RANDOM.nextInt(lengthY);
-            for (int i = -displaceX; i < lengthX - displaceX; i++) {
-                for (int j = -displaceY; j < lengthY - displaceY; j++) {
-                    world[xStart + i][yStart + j] = 1;
-                }
+    private static intWorld loadWorld() {
+        File f = new File("./proj2.ser");
+        if (f.exists()) {
+            try {
+                FileInputStream fs = new FileInputStream(f);
+                ObjectInputStream os = new ObjectInputStream(fs);
+                intWorld loadWorld = (intWorld) os.readObject();
+                os.close();
+                System.out.println(loadWorld.WIDTH + "load");
+                return loadWorld;
+            } catch (FileNotFoundException e) {
+                System.out.println("file not found");
+                System.exit(0);
+            } catch (IOException e) {
+                System.out.println(e);
+                System.exit(0);
+            } catch (ClassNotFoundException e) {
+                System.out.println("class not found");
+                System.exit(0);
             }
+        }
+        /* In the case no World has been saved yet, we return a new one. */
+        return new intWorld(WIDTH,HEIGHT,new Random(1));
+    }
 
-            switch (RANDOM.nextInt(4) + 1) {
-                case 1:
-                    outDoorPosition = new int[]{xStart - displaceX + RANDOM.nextInt(lengthX), yStart + lengthY - displaceY - 1, 1};
-                    break;
-                case 2:
-                    outDoorPosition = new int[]{xStart + lengthX - displaceX - 1, yStart - displaceY + RANDOM.nextInt(lengthY), 2};
-                    break;
-                case 3:
-                    outDoorPosition = new int[]{xStart - displaceX + RANDOM.nextInt(lengthX), yStart - displaceY, 3};
-                    break;
-                case 4:
-                    outDoorPosition = new int[]{xStart - displaceX, yStart - displaceY + RANDOM.nextInt(lengthY), 4};
-                    break;
+
+    private static void saveWorld(intWorld w) {
+        File f = new File("./proj2.ser");
+        try {
+            if (!f.exists()) {
+                f.createNewFile();
             }
-            return outDoorPosition;
-        }
-    }
-
-    // if direction is in [1,4], return it; otherwise return a random direction
-    private static int getRandomDirection(int direction){
-        if (direction == 1 || direction == 2 || direction == 3 || direction == 4)
-        {return direction;
-        }else {
-            return RANDOM.nextInt(4)+1;
-        }
-    }
-
-    // if direction is in [1,4], return it; otherwise return a random direction
-    public static int[] positionRandomDirection(int[] currentPositionDirection){
-
-            return new int[]{currentPositionDirection[0],currentPositionDirection[1],RANDOM.nextInt(4)+1};
-    }
-
-    // direction=1, return[0,1]; direction=2, return[1,0]; direction=3, return[0,-1]; direction=4, return[-1,0];
-    private static int[] getDirection(int direction){
-        int xDirection = 0;
-        int yDirection = 0;
-
-        switch (direction) {
-            case 1: yDirection = 1;break;
-            case 2: xDirection = 1;break;
-            case 3: yDirection = -1;break;
-            case 4: xDirection = -1;break;
-            default: throw new IllegalArgumentException("direction should be 1:up, 2:right, 3:down, 4:left");
-        }
-        int[] currentDirection = new int[]{xDirection,yDirection};
-        return currentDirection;
-    }
-
-    // out of domain, length =0;
-    // in domain:  length>0, return length; length <=0, return random [0,-length];
-    private static int getLength(int length, int[] startPositionDirection, int[][] world, boolean Hall){
-        int hallLength;
-        int xStart = startPositionDirection[0];
-        int yStart = startPositionDirection[1];
-
-        if(length <= 0){
-            hallLength = RANDOM.nextInt(-length)+1;
-        }else {
-            hallLength = length;
-        }
-
-        while (outBoundary(hallLength,startPositionDirection,world,Hall)){
-            hallLength--;
-        }
-
-        return hallLength;
-    }
-
-    //Hall=true: check one direction; Hall=false: check four direction;
-    private static boolean outBoundary(int length, int[] startPositionDirection, int[][] world, boolean Hall) {
-        boolean outBoundary;
-        int[]currentDirection = getDirection(startPositionDirection[2]);
-        int xDirection = currentDirection[0];
-        int yDirection = currentDirection[1];
-        int xStart = startPositionDirection[0];
-        int yStart = startPositionDirection[1];
-
-        if (Hall) {
-            outBoundary = xStart + xDirection * length > world.length - 2 ||
-                    xStart + xDirection * length < 1 ||
-                    yStart + yDirection * length > world[0].length - 2 ||
-                    yStart + yDirection * length < 1;
-        } else {
-            outBoundary = xStart + length > world.length - 2 ||
-                    xStart - length < 1 ||
-                    yStart + length > world[0].length - 2 ||
-                    yStart - length < 1;
-        }
-        return outBoundary;
-    }
-
-    //add wall.
-    public static void addWall(int[][] world) {
-
-        for (int i = 0; i < world.length; i++) {
-            for (int j = 0; j < world[0].length; j++) {
-                if(world[i][j] == 1){
-                    for (int x = -1; x < 2; x++) {
-                        for (int y = -1; y < 2; y++) {
-                            world[i+x][j+y] = world[i+x][j+y]==1? 1:2;
-                        }
-                    }
-                }
-            }
+            FileOutputStream fs = new FileOutputStream(f);
+            ObjectOutputStream os = new ObjectOutputStream(fs);
+            os.writeObject(w);
+            os.close();
+            System.out.println(w.playerPosition[0]);
+        } catch (FileNotFoundException e) {
+            System.out.println("file not found");
+            System.exit(0);
+        } catch (IOException e) {
+            System.out.println(e);
+            System.exit(0);
         }
     }
 
     //add tile.
-    public static void addTile(TETile[][] world, int[][] intWorld) {
+    public static TETile[][] addTile(TETile[][] world, intWorld World) {
 
         for (int i = 0; i < world.length; i++) {
             for (int j = 0; j < world[0].length; j++) {
-                switch (intWorld[i][j]){
+                switch (World.myIntWorld[i][j]){
                     case 1: world[i][j] = Tileset.FLOOR;break;
                     case 2: world[i][j] = Tileset.WALL;break;
+                    case 3: world[i][j] = Tileset.LOCKED_DOOR;break;
+                    case 4: world[i][j] = Tileset.UNLOCKED_DOOR;break;
+                    case 5: world[i][j] = Tileset.PLAYER;break;
                 }
             }
         }
+        return world;
     }
 
 }
