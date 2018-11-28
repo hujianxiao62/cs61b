@@ -19,6 +19,8 @@ public class MemoryGameSolution {
                                                    "Too easy for you!", "Wow, so impressive!"};
 
     public static void main(String[] args) {
+        String in = "";
+        System.out.println(in.length());
         if (args.length < 1) {
             System.out.println("Please enter a seed");
             return;
@@ -131,3 +133,5 @@ public class MemoryGameSolution {
         StdDraw.show();
     }
 }
+
+

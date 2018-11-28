@@ -2,25 +2,85 @@ package byog.Core;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
+import edu.princeton.cs.introcs.StdDraw;
+
+import java.awt.*;
 import java.io.*;
 import java.util.Random;
 public class Game {
-    TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
+    private static TERenderer ter = new TERenderer();
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
     private intWorld gameIntWorld;
     private long SEED = 12354; //Real SEED is parsed by args, this value is for loading the game without saved file
     private Random RANDOM = new Random(SEED);
+    private boolean gameOver = false;
+    private int page = 1;
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
-        //        // initialize the tile rendering engine with a window of size WIDTH x HEIGHT
-//        TERenderer ter = new TERenderer();
-//        ter.initialize(WIDTH, HEIGHT);
-
-        //ter.renderFrame(world);
+        StdDraw.enableDoubleBuffering();
+        ter.initialize(WIDTH, HEIGHT);
+        while (true) {
+            switch (page) {
+                case 1:
+                    showPage();
+                    if (StdDraw.hasNextKeyTyped()) {
+                        String c = String.valueOf(StdDraw.nextKeyTyped()).toUpperCase();
+                        switch (c) {
+                            case "N":
+                                SEED = getSeed();
+                                RANDOM = new Random(SEED);
+                                gameIntWorld = new intWorld(WIDTH,HEIGHT,RANDOM);
+                                page = 3;
+                                showPage();
+                                break;
+                            case "L":
+                                gameIntWorld = loadWorld();
+                                page = 2;
+                                break;
+                            default:break;
+                        }
+                    }
+                    break;
+                case 2:
+                    showPage();
+                    while (!gameOver) {
+                        if (StdDraw.hasNextKeyTyped()) {
+                            String c = String.valueOf(StdDraw.nextKeyTyped()).toUpperCase();
+                            if(c.equals("Q")){
+                                saveWorld(gameIntWorld);
+                                System.exit(0);
+                                break;
+                            }else {
+                                gameIntWorld.movePlayer(c);
+                                if( gameIntWorld.playerPosition[0] == gameIntWorld.DoorPosition[0] &&
+                                        gameIntWorld.playerPosition[1] == gameIntWorld.DoorPosition[1]){
+                                    gameOver = true;
+                                    drawOpenDoor();
+                                    StdDraw.pause(500);
+                                    page = 3;
+                                }else {
+                                    showPage();
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case 3:
+                    System.out.println(page);
+                    showPage();
+                    SEED += 1;
+                    RANDOM = new Random(SEED);
+                    gameIntWorld = new intWorld(WIDTH,HEIGHT,RANDOM);
+                    page = 2;
+                    gameOver = false;
+                    System.out.println(page);
+                    break;
+            }
+        }
     }
 
     /**
@@ -61,16 +121,43 @@ public class Game {
         if(command.charAt(command.length()-1)=='Q'){
         saveWorld(gameIntWorld);
         }
+        return addTile(gameIntWorld);
+    }
 
-        // initialize tiles
-        TETile[][] world = new TETile[WIDTH][HEIGHT];
-        for (int x = 0; x < WIDTH; x += 1) {
-            for (int y = 0; y < HEIGHT; y += 1) {
-                world[x][y] = Tileset.NOTHING;
-            }
+    private void showPage(){
+        switch (page){
+            case 1:
+                StdDraw.clear();
+                StdDraw.clear(Color.black);
+                // Draw the actual text
+                Font bigFont = new Font("Monaco", Font.BOLD, 30);
+                StdDraw.setFont(bigFont);
+                StdDraw.setPenColor(Color.white);
+                StdDraw.text(WIDTH / 2, HEIGHT/2+5, "Wellcome to MT's maze!");
+                bigFont = new Font("Monaco", Font.BOLD, 20);
+                StdDraw.setFont(bigFont);
+                StdDraw.text(WIDTH / 2, HEIGHT/2, "Press N to start a new game.");
+                StdDraw.text(WIDTH / 2, HEIGHT/2-3, "Press L to load previous game.");
+                StdDraw.show();
+                break;
+            case 2:
+                StdDraw.setFont();
+                TETile[][] w = addTile(gameIntWorld);
+                ter.renderFrame(w);
+                StdDraw.pause(100);
+                break;
+            case 3:
+                StdDraw.clear();
+                StdDraw.clear(Color.black);
+                // Draw the actual text
+                bigFont = new Font("Monaco", Font.BOLD, 30);
+                StdDraw.setFont(bigFont);
+                StdDraw.setPenColor(Color.white);
+                StdDraw.text(WIDTH/2, HEIGHT/2, "Open the locked door!");
+                StdDraw.show();
+                StdDraw.pause(500);
+                break;
         }
-        world = addTile(world,gameIntWorld);
-        return world;
     }
 
     private static intWorld loadWorld() {
@@ -81,7 +168,6 @@ public class Game {
                 ObjectInputStream os = new ObjectInputStream(fs);
                 intWorld loadWorld = (intWorld) os.readObject();
                 os.close();
-                System.out.println(loadWorld.WIDTH + "load");
                 return loadWorld;
             } catch (FileNotFoundException e) {
                 System.out.println("file not found");
@@ -98,7 +184,6 @@ public class Game {
         return new intWorld(WIDTH,HEIGHT,new Random(1));
     }
 
-
     private static void saveWorld(intWorld w) {
         File f = new File("./proj2.ser");
         try {
@@ -109,7 +194,6 @@ public class Game {
             ObjectOutputStream os = new ObjectOutputStream(fs);
             os.writeObject(w);
             os.close();
-            System.out.println(w.playerPosition[0]);
         } catch (FileNotFoundException e) {
             System.out.println("file not found");
             System.exit(0);
@@ -120,11 +204,12 @@ public class Game {
     }
 
     //add tile.
-    public static TETile[][] addTile(TETile[][] world, intWorld World) {
-
+    public static TETile[][] addTile(intWorld World) {
+        TETile[][] world = new TETile[WIDTH][HEIGHT];
         for (int i = 0; i < world.length; i++) {
             for (int j = 0; j < world[0].length; j++) {
                 switch (World.myIntWorld[i][j]){
+                    case 0: world[i][j] = Tileset.NOTHING;break;
                     case 1: world[i][j] = Tileset.FLOOR;break;
                     case 2: world[i][j] = Tileset.WALL;break;
                     case 3: world[i][j] = Tileset.LOCKED_DOOR;break;
@@ -134,6 +219,45 @@ public class Game {
             }
         }
         return world;
+    }
+
+    private void drawOpenDoor() {
+        gameIntWorld.addItem(gameIntWorld.DoorPosition,4);
+        TETile[][] w = addTile(gameIntWorld);
+        ter.renderFrame(w);
+        StdDraw.pause(100);
+    }
+
+    public long getSeed() {
+        String input = " ";
+        drawSeed(input);
+
+        while (input.charAt(input.length()-1) != 'S' && input.charAt(input.length()-1) != 's') {
+            if (!StdDraw.hasNextKeyTyped()) {
+                continue;
+            }
+                char key = StdDraw.nextKeyTyped();
+                input += String.valueOf(key);
+                drawSeed(input);
+        }
+            StdDraw.pause(500);
+        return Long.valueOf(input.substring(1,input.length()-1));
+    }
+
+    public void drawSeed(String s) {
+        int midWidth = WIDTH / 2;
+        int midHeight = HEIGHT / 2;
+
+        StdDraw.clear();
+        StdDraw.clear(Color.black);
+
+        // Draw the actual text
+        Font bigFont = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(bigFont);
+        StdDraw.setPenColor(Color.white);
+        StdDraw.text(midWidth, midHeight+5, "Please enter a random number and end with S");
+        StdDraw.text(midWidth, midHeight, s);
+        StdDraw.show();
     }
 
 }

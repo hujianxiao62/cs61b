@@ -5,13 +5,13 @@ import java.util.Random;
 
 public class intWorld implements Serializable {
     private static final long serialVersionUID = 1L;
-    public int WIDTH=0;
-    public int HEIGHT=0;
+    public int WIDTH;
+    public int HEIGHT;
     public int[][] myIntWorld;
     private Random RANDOM;
     public int[] DoorPosition;
     public int[] playerPosition;
-
+    public int round = 1;
     public intWorld(int width, int height, Random random){
         WIDTH = width;
         HEIGHT = height;
@@ -189,7 +189,7 @@ public class intWorld implements Serializable {
     }
 
     //add item. 3:locked door, 4:opened door, 5: player
-    public void addItem( int[] itemPosition, int item) {
+    public void addItem(int[] itemPosition, int item) {
         myIntWorld[itemPosition[0]][itemPosition[1]] = item;
     }
 

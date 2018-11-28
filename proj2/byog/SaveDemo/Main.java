@@ -11,7 +11,7 @@ import java.io.ObjectOutputStream;
 
 public class Main {
     public static void main(String[] args) {
-        StdDraw.enableDoubleBuffering();
+        //StdDraw.enableDoubleBuffering();
 
         /* If a World has been saved before, we first load it */
         World w = loadWorld();
