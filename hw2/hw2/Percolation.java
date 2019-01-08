@@ -5,6 +5,7 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 public class Percolation {
     private Boolean[][] grid;
     private WeightedQuickUnionUF PUnion;
+    private WeightedQuickUnionUF FUnion;
     private int N_;
     private int openSite;
     private boolean isPercolates = false;
@@ -16,9 +17,10 @@ public class Percolation {
             throw new IllegalArgumentException("N should be bigger than 0.");
         }else {
             grid = new Boolean[N][N];
-            PUnion = new WeightedQuickUnionUF(N*N+1);
-            for (int i = 0; i<=N; i++){
-                for (int j = 0; j<=N; j++){
+            PUnion = new WeightedQuickUnionUF(N*N+2);
+            FUnion = new WeightedQuickUnionUF(N*N+2);
+            for (int i = 0; i<N; i++){
+                for (int j = 0; j<N; j++){
                     grid[i][j] = false;
                 }
             }
@@ -30,15 +32,18 @@ public class Percolation {
         if (row < 0 || col < 0){
             throw new IndexOutOfBoundsException("row and col should not be negative.");
         }else {
-            grid[row-1][col-1] = true;
+            grid[row][col] = true;
             openSite++;
-            if(row == 1){
-                PUnion.union(N_*N_+1,(row-1)*N_+col);
-            }else if(row == N_ && this.checkAround(row,col)){
-                PUnion.union(N_*N_+1,(row-1)*N_+col);
-                isPercolates = true;
-            }else if(this.checkAround(row,col)){
-                PUnion.union(N_*N_+1,(row-1)*N_+col);
+            if(row == 0){
+                this.checkAround(row,col);
+                PUnion.union(N_*N_,row*N_+col);
+                FUnion.union(N_*N_,row*N_+col);
+            }else if(row == N_-1){
+                this.checkAround(row,col);
+                PUnion.union(N_*N_+1,row*N_+col);
+            }
+            else{
+                 this.checkAround(row,col);
             }
         }
     }
@@ -48,7 +53,7 @@ public class Percolation {
         if (row < 0 || col < 0){
             throw new IndexOutOfBoundsException("row and col should not be negative.");
         }else {
-            return grid[row-1][col-1];}
+            return grid[row][col];}
     }
 
     // is the site (row, col) full?
@@ -56,7 +61,7 @@ public class Percolation {
         if (row < 0 || col < 0){
             throw new IndexOutOfBoundsException("row and col should not be negative.");
         }else {
-            return PUnion.connected(N_*N_+1,(row-1)*N_+col);}
+            return FUnion.connected(N_*N_,row*N_+col);}
     }
 
     // number of open sites
@@ -66,23 +71,30 @@ public class Percolation {
 
     // does the system percolate?
     public boolean percolates(){
-        return isPercolates;
+        return PUnion.connected(N_*N_,N_*N_+1);
     }
 
-    private boolean checkAround(int row, int col){
-        boolean P = false;
+    private void checkAround(int row, int col){
         try{
-            if( PUnion.connected(N_*N_+1,row*N_+col) ||
-                    PUnion.connected(N_*N_+1,(row-2)*N_+col) ||
-                    PUnion.connected(N_*N_+1,(row-1)*N_+col-1) ||
-                    PUnion.connected(N_*N_+1,(row-1)*N_+col+1)
-            ){
-                P = true;
-            }else {P = false;}
-        }
-        catch (Exception e){}
-
-        return P;
+            if( this.isOpen(row+1,col)){
+                PUnion.union((row+1)*N_+col,row*N_+col);
+                FUnion.union((row+1)*N_+col,row*N_+col);
+            }}catch (Exception e){}
+        try{
+            if(this.isOpen(row-1,col)){
+                PUnion.union((row-1)*N_+col,row*N_+col);
+                FUnion.union((row-1)*N_+col,row*N_+col);
+            }}catch (Exception e){}
+        try{
+            if(this.isOpen(row,col+1)){
+                PUnion.union(row*N_+col+1,row*N_+col);
+                FUnion.union(row*N_+col+1,row*N_+col);
+            }}catch (Exception e){}
+        try{
+            if(this.isOpen(row,col-1)){
+                PUnion.union(row*N_+col-1,row*N_+col);
+                FUnion.union(row*N_+col-1,row*N_+col);
+            }}catch (Exception e){}
     }
 
 }
