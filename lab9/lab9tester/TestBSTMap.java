@@ -1,7 +1,7 @@
 package lab9tester;
 
 import static org.junit.Assert.*;
-
+import com.gradescope.jh61b.junit.TestRunner;
 import org.junit.Test;
 import lab9.BSTMap;
 
@@ -87,6 +87,6 @@ public class TestBSTMap {
     }
 
     public static void main(String[] args) {
-        jh61b.junit.TestRunner.runTests(TestBSTMap.class);
+        TestRunner.runTests(TestBSTMap.class);
     }
 }
