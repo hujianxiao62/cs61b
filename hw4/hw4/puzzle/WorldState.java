@@ -8,6 +8,8 @@ public interface WorldState {
     /** Provides an iterable of all the neighbors of this WorldState. */
     Iterable<WorldState> neighbors();
 
+    /** Estimates the distance to the goal. Must be less than or equal
+     *  to the actual (and unknown) distance. */
     default boolean isGoal() {
         return estimatedDistanceToGoal() == 0;
     }
