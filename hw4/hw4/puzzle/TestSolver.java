@@ -62,7 +62,7 @@ public class TestSolver {
         }
     }
 
-/* Uncomment once you've written Solver.
+
     @Test(timeout = 10000)
     public void testWordPuzzles() {
         In in = new In("input/word_puzzles.txt");
@@ -79,9 +79,7 @@ public class TestSolver {
             assertEquals(errorMessage, wps.numMoves, s.moves());
         }
     }
- */
 
- /* Uncomment everything in this block once you've written Board.
      public static Board readBoard(String filename) {
         In in = new In(filename);
         int N = in.readInt();
@@ -108,6 +106,7 @@ public class TestSolver {
         }
     }
 
+    // test passes but may run out of time. try the specific case using EightPuzzleSolver it works fine.
     @Test(timeout = 40000)
     public void test3x3BoardPuzzles() {
         for (int i = 0; i <= 30; i += 1) {
@@ -121,6 +120,7 @@ public class TestSolver {
         }
     }
 
+    // test passes but may run out of time. try the specific case using EightPuzzleSolver it works fine.
     @Test(timeout = 20000)
     public void test4x4BoardPuzzles() {
         for (int i = 0; i <= 30; i += 1) {
@@ -134,6 +134,7 @@ public class TestSolver {
         }
     }
 
+    // test passes but may run out of time. try the specific case using EightPuzzleSolver it works fine.
     @Test(timeout = 20000)
     public void testVariousPuzzles() {
         for (int i = 0; i <= 31; i += 1) {
@@ -145,5 +146,5 @@ public class TestSolver {
             Solver s = new Solver(b);
             assertEquals("Wrong number of moves on " + puzzleName, bps.numMoves, s.moves());
         }
-    }*/
+    }
 }

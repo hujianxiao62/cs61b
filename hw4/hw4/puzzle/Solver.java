@@ -31,23 +31,6 @@ public class Solver {
 
     }
 
-//    private void solverHelper(WorldState initial){
-//        SearchNode minNode = (SearchNode) PQ.delMin();
-//        if(!minNode.WS.isGoal()){
-//            Iterator E = minNode.WS.neighbors().iterator();
-//            while (E.hasNext()){
-//                PQ.insert(new SearchNode(initial,minNode.moves+1,minNode));
-//            }
-//        }else {
-//            movs = minNode.moves;
-//            Solu.push(minNode.WS);
-//            while (minNode.prev != null){
-//                Solu.push(minNode.prev.WS);
-//                minNode = minNode.prev;
-//            }
-//        }
-//    }
-
     private class SearchNode implements Comparable<SearchNode>{
         private WorldState WS;
         private int moves;
