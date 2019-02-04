@@ -53,6 +53,15 @@ public class CountingSortTester {
         assertIsSorted(sortedSomeNegative);
     }
 
+    @Test
+    public void testBetterWithSomeNegative1() {
+        int[] sortedSomeNegative = new int[]{-1,0,-2,0,1};
+
+        int[] s = CountingSort.betterCountingSort(sortedSomeNegative);
+        for(int bb=0; bb<sortedSomeNegative.length; bb++){
+            System.out.print(s[bb]);
+        }
+    }
 
     public static void main(String[] args) {
         jh61b.junit.TestRunner.runTests(CountingSortTester.class);
