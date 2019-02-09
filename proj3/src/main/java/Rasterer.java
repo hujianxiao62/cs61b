@@ -9,8 +9,13 @@ import java.util.Map;
  */
 public class Rasterer {
 
+    public static final double ROOT_ULLAT = 37.892195547244356, ROOT_ULLON = -122.2998046875,
+            ROOT_LRLAT = 37.82280243352756, ROOT_LRLON = -122.2119140625;
+    public static final int TILE_SIZE = 256;
+    public static final double ROOT_LonDPP = (ROOT_LRLON-ROOT_ULLON)/TILE_SIZE;
+
     public Rasterer() {
-        // YOUR CODE HERE
+
     }
 
     /**
@@ -44,9 +49,53 @@ public class Rasterer {
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
         // System.out.println(params);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
-                           + "your browser.");
+
+        String[][] grid = new String[][]{};
+        double ul_lon = 0;
+        double ul_lat = 0;
+        double lr_lon = 0;
+        double lr_lat = 0;
+        int depth =0;
+        Boolean isSuccess = false;
+
+
+
+        results.put("render_grid",grid);
+        results.put("raster_ul_lon",ul_lon);
+        results.put("raster_ul_lat",ul_lat);
+        results.put("raster_lr_lon",lr_lon);
+        results.put("raster_lr_lat",lr_lat);
+        results.put("depth",depth);
+        results.put("query_success",isSuccess);
         return results;
+    }
+
+    private static int getDepth(double ullon, double lrlon, double w){
+        double lonDPP = (lrlon -ullon)/w;
+        double depth = Math.ceil(Math.log(ROOT_LonDPP/lonDPP) / Math.log(2));
+        if(depth < 0) depth = 0;
+        else if(depth>7) depth = 7;
+        return (int)depth;
+    }
+
+    private static double[] getRaster(double ullon, double ul_lat, double lrlon, double lr_lat, double w){
+        double lonCellSize = (ROOT_LRLON - ROOT_ULLON)/(getDepth(ullon,lrlon,w) + 1);
+        double latCellSize = (ROOT_ULLAT - ROOT_LRLAT)/(getDepth(ullon,lrlon,w) + 1);
+        int ulx = (int) Math.floor((ullon - ROOT_ULLON) / lonCellSize);
+        int uly = (int) Math.floor((ROOT_ULLAT - ul_lat) / latCellSize);
+        int lrx = (int) Math.floor((lrlon - ROOT_ULLON) / lonCellSize);
+        int lry = (int) Math.floor((ROOT_ULLAT - lr_lat) / lonCellSize);
+
+        return new double[]{ulx, uly, lrx, lry};
+    }
+
+    public static void main(String[] args){
+        double lrlon = -122.29705810546875;
+        double ullon = -122.2998046875;
+
+        System.out.println(getDepth(-122.2998046875, -122.29705810546875, 1000000));
+        System.out.println(Math.log(ROOT_LonDPP/((lrlon -ullon)/256)));
+        System.out.println(ROOT_LonDPP);
     }
 
 }
