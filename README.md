@@ -7,7 +7,7 @@ Intellij is used to build and complie all those codes.
 Please feel free to connect me if you have any question or find some bug.
 hujianxiao62@gmail.com
 
-  | Content | finished
+ name | Content | finished
 ------------ | -------------
 ec1 | unkown | N
 hw1 | Java Syntax | N
@@ -39,4 +39,3 @@ lab12 | Merge, Quick sort | Y
 lab13 | Radix sort | Y
 lab14 | Fractal Sound | N
 lab15 | HugLife | N
-lab14 | queque | N
