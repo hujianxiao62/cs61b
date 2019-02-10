@@ -42,6 +42,30 @@ public class GraphDB {
         clean();
     }
 
+    private class Node{
+        long id;
+        double lon;
+        double lat;
+
+        Node(long id, double lon, double lat){
+            this.id = id;
+            this.lon = lon;
+            this.lat = lat;
+        }
+    }
+
+    private class Edge{
+        long id;
+        Node n1;
+        Node n2;
+
+        Edge(long id, Node n1, Node n2){
+            this.id = id;
+            this.n1 = n1;
+            this.n2 = n2;
+        }
+    }
+
     /**
      * Helper to process strings into their "cleaned" form, ignoring punctuation and capitalization.
      * @param s Input string.
@@ -156,4 +180,15 @@ public class GraphDB {
     double lat(long v) {
         return 0;
     }
+
+    double addNode(long v) {
+        return 0;
+    }
+
+    double rmNode(){return 0;}
+
+    double addEdge(long v) {
+        return 0;
+    }
+
 }
