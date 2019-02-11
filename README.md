@@ -1,11 +1,19 @@
 This repository is a personal practice for UC Berkeley CS61B sp18, data structure course.
+
 Detail info and spec at: https://sp18.datastructur.es/index.html
+
 Library & data: https://github.com/Berkeley-CS61B/library-sp18.git
 
+
 All implemented code should pass corresponding test. I have not try auto grader, though you can find it at *autograder_samples-master* folder. 
+
 Intellij is used to build and complie all those codes.
+
 Please feel free to connect me if you have any question or find some bug.
+
 hujianxiao62@gmail.com
+
+Many thanks to the instructor josh hug and Berkeley for the great course and made it open source.
 
  name | Content | finished
 ----- | --------| ----
@@ -32,7 +40,7 @@ lab5 | play with tile engine | Y
 lab6 | game UI, implement a type game| Y
 lab7 | No lab | 
 lab8 | No lab | 
-lab9 | tree map and hash map | Y
+lab9 | BST map and hash map | Y
 lab10 | Heap Min PQ | Y
 lab11 | BFS, DFS, A* | Y
 lab12 | Merge, Quick sort | Y

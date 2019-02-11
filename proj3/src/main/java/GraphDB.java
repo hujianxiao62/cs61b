@@ -7,6 +7,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -41,29 +44,40 @@ public class GraphDB {
         }
         clean();
     }
+    protected HashMap<Long, Node> nodeTable = new HashMap<>();
 
-    private class Node{
-        long id;
-        double lon;
-        double lat;
+    protected class Node{
+        private long id = 0;
+        private double lon = 0;
+        private double lat = 0;
+        private String street = "";
+        private String name = "";
+         ArrayList<Long> adj = new ArrayList<>();
+//        HashMap<Long,Double> edgeLength = new HashMap<>();
 
         Node(long id, double lon, double lat){
             this.id = id;
             this.lon = lon;
             this.lat = lat;
         }
-    }
 
-    private class Edge{
-        long id;
-        Node n1;
-        Node n2;
+        void setAdj(long otherID){
+            if(!adj.contains(otherID)){
+                adj.add(otherID);
+//                edgeLength.put(otherID,distance(this.id,otherID));
+                }
+            }
 
-        Edge(long id, Node n1, Node n2){
-            this.id = id;
-            this.n1 = n1;
-            this.n2 = n2;
+        void unAdj(long otherID){
+            if(adj.contains(otherID)){
+                adj.remove(otherID);
+//                edgeLength.remove(otherID);
+            }
         }
+
+        void addStreet(String name){street = name; }
+
+        void addName(String name){this.name = name; }
     }
 
     /**
@@ -81,7 +95,15 @@ public class GraphDB {
      *  we can reasonably assume this since typically roads are connected.
      */
     private void clean() {
-        // TODO: Your code here.
+        ArrayList<Long> tmp = new ArrayList<>();
+        for (Long id : nodeTable.keySet()) {
+            if (nodeTable.get(id).adj.size() == 0){
+                tmp.add(id);
+            }
+        }
+        for (Long id : tmp) {
+            nodeTable.remove(id);
+        }
     }
 
     /**
@@ -89,8 +111,11 @@ public class GraphDB {
      * @return An iterable of id's of all vertices in the graph.
      */
     Iterable<Long> vertices() {
-        //YOUR CODE HERE, this currently returns only an empty list.
-        return new ArrayList<Long>();
+        ArrayList<Long> e = new ArrayList<Long>();
+        for (Long id : nodeTable.keySet()) {
+            e.add(id);
+        }
+        return e;
     }
 
     /**
@@ -99,7 +124,7 @@ public class GraphDB {
      * @return An iterable of the ids of the neighbors of v.
      */
     Iterable<Long> adjacent(long v) {
-        return null;
+        return nodeTable.get(v).adj;
     }
 
     /**
@@ -160,7 +185,15 @@ public class GraphDB {
      * @return The id of the node in the graph closest to the target.
      */
     long closest(double lon, double lat) {
-        return 0;
+        long closestID = -1;
+        double closestL = Double.MAX_VALUE;
+        for (Long id : nodeTable.keySet()) {
+            if(distance(lon, lat, nodeTable.get(id).lon, nodeTable.get(id).lat) < closestL){
+                closestL = distance(lon, lat, nodeTable.get(id).lon, nodeTable.get(id).lat);
+                closestID = id;}
+
+        }
+        return closestID;
     }
 
     /**
@@ -169,7 +202,7 @@ public class GraphDB {
      * @return The longitude of the vertex.
      */
     double lon(long v) {
-        return 0;
+        return nodeTable.get(v).lon;
     }
 
     /**
@@ -178,17 +211,31 @@ public class GraphDB {
      * @return The latitude of the vertex.
      */
     double lat(long v) {
-        return 0;
+        return nodeTable.get(v).lat;
     }
 
-    double addNode(long v) {
-        return 0;
+    void addNode(long id, double lon, double lat) {
+        nodeTable.put(id, new Node(id, lon, lat));
     }
 
-    double rmNode(){return 0;}
+    void rmNode(long id){
+        Iterator<Long> e = nodeTable.get(id).adj.iterator();
+        while (e.hasNext()){
+            nodeTable.get(e.next()).adj.remove(id);
+        }
+        nodeTable.remove(id);
+    }
 
-    double addEdge(long v) {
-        return 0;
+    void addEdge(long v1, long v2) {
+//        Node n1 = nodeTable.get(v1);
+//        Node n2 = nodeTable.get(v2);
+//        n1.adj.add(v2);
+//        n2.adj.add(v1);
+//        nodeTable.put(v1, n1);
+//        nodeTable.put(v2,n2);
+
+        nodeTable.get(v1).adj.add(v2);
+        nodeTable.get(v2).adj.add(v1);
     }
 
 }
